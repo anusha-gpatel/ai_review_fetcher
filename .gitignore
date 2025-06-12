@@ -3,6 +3,65 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+.env.*
+
+# Jupyter Notebook checkpoints (if any)
+.ipynb_checkpoints
+
+# VSCode settings
+.vscode/
+
+# macOS & Linux
+.DS_Store
+*.swp
+
+# Output folders and CSV files
+output/
+*.csv
+
+# Logs and temp
+*.log
+*.tmp
+
+# MyPy, Pyright, Coverage, and Pytest cache
+.mypy_cache/
+.pyright/
+.coverage
+htmlcov/
+.cache/
+pytest_cache/
+
+# pip dependency resolver
+pip-log.txt
+
+# PyInstaller
+dist/
+build/
+*.spec
+
+# IDEs
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# FastAPI reload artifacts
+*.pid
+
+# Uvicorn reload cache
+__pycache__/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
 # Distribution / packaging
 .Python
 build/
