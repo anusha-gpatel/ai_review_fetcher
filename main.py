@@ -9,6 +9,6 @@ if __name__ == "__main__":
 
     # Collect data for ICLR 2018–2024 (change range if needed)
     #collector.collect_multiple_years(list(range(2018, 2025)))
-    collector.collect_multiple_years([2022, 2023])
+    collector.collect_multiple_years([2024])
 
     print("\nAll year-wise data saved in 'output/' folder")
