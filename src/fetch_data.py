@@ -46,44 +46,85 @@ class ICLRDataCollector:
         }
 
     def extract_reviews(self, paper, year, venue):
-        """Extract all reviews for a paper"""
         reviews = []
-        if hasattr(paper, 'details') and 'replies' in paper.details:
-            for reply in paper.details['replies']:
-                try:
-                    invitation = reply.get('invitation', '')
-                    if 'Official_Review' in invitation or 'Review' in invitation:
-                        content = reply.get('content', {})
-                        review_sections = ['summary', 'strengths', 'weaknesses', 'questions', 'limitations', 'review']
-                        full_text = "\n\n".join(
-                            f"{section.upper()}: {content.get(section, '')}"
-                            for section in review_sections if content.get(section)
-                        )
-                        reviews.append({
-                            'review_id': reply.get('id', ''),
-                            'paper_id': paper.id,
-                            'year': year,
-                            'venue': venue,
-                            'reviewer': reply.get('signatures', ['Anonymous'])[0],
-                            'full_review_text': full_text.strip(),
-                            'rating': content.get('rating', ''),
-                            'confidence': content.get('confidence', ''),
-                            'summary': content.get('summary', ''),
-                            'strengths': content.get('strengths', ''),
-                            'weaknesses': content.get('weaknesses', ''),
-                            'questions': content.get('questions', ''),
-                            'limitations': content.get('limitations', ''),
-                            'recommendation': content.get('recommendation', ''),
-                            'review_date': reply.get('cdate', None),
-                        })
-                except Exception as e:
-                    print(f"Error processing reply: {str(e)[:60]}...")
+    
+    # Helper function to get value from both formats
+        def get_value(field_data):
+            if isinstance(field_data, dict) and 'value' in field_data:
+                return field_data['value']
+            return field_data if field_data else ''
+        
+        # Check both 'replies' (old format) and 'directReplies' (new format)
+        replies_list = []
+        if hasattr(paper, 'details'):
+            if 'replies' in paper.details:
+                replies_list = paper.details['replies']
+            elif 'directReplies' in paper.details:
+                replies_list = paper.details['directReplies']
+        
+        for reply in replies_list:
+            try:
+                invitation = reply.get('invitation', '')
+                if 'Official_Review' in invitation or 'Review' in invitation:
+                    content = reply.get('content', {})
+                    
+                    # Extract values handling both formats
+                    rating = get_value(content.get('rating', ''))
+                    confidence = get_value(content.get('confidence', ''))
+                    summary = get_value(content.get('summary', ''))
+                    strengths = get_value(content.get('strengths', ''))
+                    weaknesses = get_value(content.get('weaknesses', ''))
+                    questions = get_value(content.get('questions', ''))
+                    limitations = get_value(content.get('limitations', ''))
+                    recommendation = get_value(content.get('recommendation', ''))
+                    soundness = get_value(content.get('soundness', ''))
+                    presentation = get_value(content.get('presentation', ''))
+                    contribution = get_value(content.get('contribution', ''))
+                    
+                    # Build full review text
+                    review_sections = {
+                        'summary': summary,
+                        'strengths': strengths,
+                        'weaknesses': weaknesses,
+                        'questions': questions,
+                        'limitations': limitations
+                    }
+                    
+                    full_text = "\n\n".join(
+                        f"{section.upper()}: {text}"
+                        for section, text in review_sections.items() if text
+                    )
+                    
+                    reviews.append({
+                        'review_id': reply.get('id', ''),
+                        'paper_id': paper.id,
+                        'year': year,
+                        'venue': venue,
+                        'reviewer': reply.get('signatures', ['Anonymous'])[0],
+                        'full_review_text': full_text.strip(),
+                        'rating': rating,
+                        'confidence': confidence,
+                        'summary': summary,
+                        'strengths': strengths,
+                        'weaknesses': weaknesses,
+                        'questions': questions,
+                        'limitations': limitations,
+                        'soundness': soundness,
+                        'presentation': presentation,
+                        'contribution': contribution,
+                        'recommendation': recommendation,
+                        'review_date': reply.get('cdate', None),
+                    })
+            except Exception as e:
+                print(f"Error processing reply: {str(e)[:60]}...")
+        
         return reviews
+
 
     def collect_oral_accepts(self, year, venue=None):
         """Collect only oral accepted papers for a given year"""
         venue = venue or f'ICLR.cc/{year}/Conference'
-        print(f"🎤 Collecting oral acceptances for {year}...")
+        print(f"Collecting oral acceptances for {year}...")
         subs = list(self.client.get_all_notes(
             invitation=f'{venue}/-/Blind_Submission',
             details='directReplies'
